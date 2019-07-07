@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { random } from 'lodash';
 import './App.css';
-import Button from './components/Button';
+import QuoteMachine from './components/QuoteMachine';
 
 class App extends Component {
   constructor(props) {
@@ -10,7 +10,8 @@ class App extends Component {
       quotes: [],
       selectedQuoteIndex: null,
     };
-    this.selectQuoteIndex = this.selectQuoteIndex.bind(this);
+    this.assignNewQuoteIndex = this.assignNewQuoteIndex.bind(this);
+    this.selectQuoteIndex = this.generateNewQuoteIndex.bind(this);
   }
 
   componentDidMount() {
@@ -18,11 +19,7 @@ class App extends Component {
       'https://gist.githubusercontent.com/natebass/b0a548425a73bdf8ea5c618149fe1fce/raw/f4231cd5961f026264bb6bb3a6c41671b044f1f4/quotes.json'
     )
       .then(data => data.json())
-      .then(quotes =>
-        this.setState({ quotes }, () => {
-          this.setState({ selectedQuoteIndex: this.selectQuoteIndex() });
-        })
-      );
+      .then(quotes => this.setState({ quotes }, this.assignNewQuoteIndex));
   }
 
   get selectedQuote() {
@@ -30,27 +27,29 @@ class App extends Component {
       !this.state.quotes.length ||
       !Number.isInteger(this.state.selectedQuoteIndex)
     ) {
-      return;
+      return undefined;
     }
     return this.state.quotes[this.state.selectedQuoteIndex];
   }
 
-  selectQuoteIndex() {
+  generateNewQuoteIndex() {
     if (!this.state.quotes.length) {
-      return;
+      return undefined;
     }
     return random(0, this.state.quotes.length - 1);
   }
 
+  assignNewQuoteIndex() {
+    this.setState({ selectedQuoteIndex: this.generateNewQuoteIndex() });
+  }
+
   render() {
-    // console.log(this.state.selectedQouteIndex);
-    // console.log(this.state.quotes);
     return (
       <div className="App" id="quote-box">
-        {this.selectedQuote
-          ? `"${this.selectedQuote.quote}" - ${this.selectedQuote.author}`
-          : ''}
-        <Button buttonDisplayName="Next qoute" clickHandler={this.nextQoute} />
+        <QuoteMachine
+          selectedQuote={this.selectedQuote}
+          assignNewQuoteIndex={this.assignNewQuoteIndex}
+        />
       </div>
     );
   }
